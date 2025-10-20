@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// QUICK PATH: Minimal schema for MVP
+// ============================================
+
+model User {
+  id            String   @id @default(cuid())
+  clerkId       String   @unique
+  email         String   @unique
+  name          String?
+  avatarUrl     String?
+
+  // Simple JSON for now (no separate models)
+  measurements  Json?    // { height: 165, bust: 34, waist: 28, hip: 38 }
+
+  sessions      TryOnSession[]
+  cartItems     CartItem[]
+  orders        Order[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@index([clerkId])
+}
+
+model Garment {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+
+  category      String   // "SAREE", "LEHENGA", "KURTA"
+  region        String?  // "SOUTH_INDIAN", "PUNJABI"
+
+  imageUrl      String
+  thumbnailUrl  String
+
+  // Simple fields (no complex variants for MVP)
+  price         Float
+  colors        String[] // ["red", "gold"]
+  sizes         String[] // ["S", "M", "L", "Free Size"]
+
+  inStock       Boolean  @default(true)
+  stockCount    Int      @default(10)
+
+  sessions      TryOnSession[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category])
+  @@index([inStock])
+}
+
+model TryOnSession {
+  id                String   @id @default(cuid())
+
+  userId            String?
+  user              User?    @relation(fields: [userId], references: [id])
+
+  garmentId         String
+  garment           Garment  @relation(fields: [garmentId], references: [id])
+
+  inputImageUrl     String   // User photo (Vercel Blob)
+  resultImageUrl    String?  // Generated image
+
+  status            String   @default("QUEUED") // QUEUED, PROCESSING, COMPLETED, FAILED
+  errorMessage      String?
+
+  shareToken        String?  @unique
+
+  createdAt         DateTime @default(now())
+  expiresAt         DateTime // Delete after 24h
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model CartItem {
+  id          String   @id @default(cuid())
+
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  sessionId   String?  // For guest carts
+
+  garmentId   String
+  garment     Garment  @relation(fields: [garmentId], references: [id])
+
+  size        String   // "M", "Free Size"
+  quantity    Int      @default(1)
+
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, garmentId, size])
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  orderNumber     String   @unique // ORD-20250101-001
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+
+  items           OrderItem[]
+
+  // Simple JSON for addresses (no separate model)
+  shippingAddress Json     // { name, phone, address, city, state, pincode }
+
+  subtotal        Float
+  shippingCost    Float
+  total           Float
+
+  status          String   @default("PENDING") // PENDING, CONFIRMED, SHIPPED, DELIVERED
+
+  // Payment (Razorpay)
+  paymentId       String?
+  paymentStatus   String   @default("PENDING") // PENDING, PAID, FAILED
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([orderNumber])
+  @@index([status])
+}
+
+model OrderItem {
+  id            String  @id @default(cuid())
+
+  orderId       String
+  order         Order   @relation(fields: [orderId], references: [id])
+
+  garmentId     String
+  garment       Garment @relation(fields: [garmentId], references: [id])
+
+  size          String
+  quantity      Int
+  price         Float   // Price at time of purchase
+
+  @@index([orderId])
+}

@@ -1,0 +1,19 @@
+
+> dev
+> turbo run dev
+
+turbo 2.5.8
+
+• Packages in scope: api, database, web
+• Running dev in 3 packages
+• Remote caching disabled
+api:dev: cache bypass, force executing 9aa84708359d3154
+web:dev: cache bypass, force executing 0119bb78cd3507d4
+api:dev:
+api:dev: > api@1.0.0 dev
+api:dev: > tsx src/index.ts
+api:dev:
+web:dev:
+web:dev: > web@0.1.0 dev
+web:dev: > next dev
+web:dev:
