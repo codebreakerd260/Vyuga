@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import { prisma } from '../lib/prisma.ts';
+import { prisma } from '@vyuga/database';
 import { z } from 'zod';
 
 export const cartRoutes: FastifyPluginAsync = async (fastify) => {

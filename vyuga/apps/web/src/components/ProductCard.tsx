@@ -6,16 +6,10 @@ import { useRouter } from 'next/navigation';
 import { ShoppingCart, Sparkles } from 'lucide-react';
 import { useCartStore } from '@/store/cart';
 import { toast } from 'sonner';
+import { Garment } from '@/lib/types';
 
 interface ProductCardProps {
-  garment: {
-    id: string;
-    name: string;
-    price: number;
-    imageUrl: string;
-    category: string;
-    sizes: string[];
-  };
+  garment: Garment;
 }
 
 export function ProductCard({ garment }: ProductCardProps) {

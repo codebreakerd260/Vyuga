@@ -6,7 +6,8 @@ export async function uploadToBlob(
 ): Promise<string> {
   const { url } = await put(filename, buffer, {
     access: 'public',
-    addRandomSuffix: true
+    addRandomSuffix: true,
+    token: process.env.BLOB_READ_WRITE_TOKEN
   });
   return url;
 }

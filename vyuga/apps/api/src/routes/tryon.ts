@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import { prisma } from '../lib/prisma.ts';
+import { prisma } from '@vyuga/database';
 import { uploadToBlob } from '../services/storage.ts';
 import { generateTryOn } from '../services/huggingface.ts';
 import { z } from 'zod';
@@ -20,14 +20,10 @@ export const tryonRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     // Get garment ID from fields
-    const fields = Object.fromEntries(
-      await Promise.all(
-        (data.fields as any[]).map(async (field) => [
-          field.fieldname,
-          (await field.value).value
-        ])
-      )
-    );
+    const fields: any = {};
+    for await (const field of data.fields) {
+      fields[field.fieldname] = field.value;
+    }
 
     const garmentId = fields.garmentId;
     if (!garmentId) {

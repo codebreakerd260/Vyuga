@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import { prisma } from '../lib/prisma.ts';
+import { prisma } from '@vyuga/database';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { z } from 'zod';
